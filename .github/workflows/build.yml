@@ -73,6 +73,7 @@ jobs:
             (apt-get update && apt-get install -y qtbase5-dev cmake)
           CIBW_ENVIRONMENT: >
             PROCGEN_CMAKE_PREFIX_PATH=${{ env.PROCGEN_CMAKE_PREFIX_PATH || '' }}
+            MACOSX_DEPLOYMENT_TARGET=15.0
 
       - uses: actions/upload-artifact@v6
         with:
