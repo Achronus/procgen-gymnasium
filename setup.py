@@ -1,8 +1,9 @@
 """
 Custom setup.py that compiles the C++ game library during wheel creation.
 
-This ensures platform-specific wheels include the prebuilt shared library
-(env.dll / libenv.so / libenv.dylib) so users don't need a C++ toolchain.
+Uses the DummyExtension pattern (from original OpenAI procgen) to trigger
+build_ext, which produces a platform-tagged wheel and copies the compiled
+shared library into the wheel's package data.
 """
 
 import importlib.util
@@ -12,18 +13,24 @@ import shutil
 import sys
 import types
 
-from setuptools import setup, Distribution
-from setuptools.command.build_py import build_py
+from setuptools import Extension, setup
+from setuptools.command.build_ext import build_ext
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_DIR = os.path.join(SCRIPT_DIR, "procgen_gym")
-PREBUILT_DIR = os.path.join(PACKAGE_DIR, "data", "prebuilt")
 
 LIB_NAMES = {
     "Windows": "env.dll",
     "Darwin": "libenv.dylib",
     "Linux": "libenv.so",
 }
+
+
+class DummyExtension(Extension):
+    """Empty extension that forces setuptools to produce a platform wheel."""
+
+    def __init__(self):
+        super().__init__("dummy", sources=[])
 
 
 def _load_module(name, filepath):
@@ -35,28 +42,25 @@ def _load_module(name, filepath):
     return mod
 
 
-class BinaryDistribution(Distribution):
-    """Force setuptools to produce a platform-specific wheel."""
-
-    def has_ext_modules(self):
-        return True
-
-
-class BuildWithCpp(build_py):
-    """Custom build_py that compiles the C++ library first."""
+class BuildCppExt(build_ext):
+    """Custom build_ext that compiles the C++ library via CMake."""
 
     def run(self):
-        self._build_cpp()
-        super().run()
+        if self.inplace:
+            print("skipping inplace build, library will be built on demand")
+            return
 
-    def _build_cpp(self):
-        # Register a stub procgen_gym package so relative imports in
-        # builder.py and libenv.py resolve in pip's isolated build env.
+        # Register a stub procgen_gym package with a minimal libenv shim
+        # so builder.py's `from .libenv import get_header_dir` resolves
+        # without pulling in numpy/ctypes (unavailable in build env).
         stub = types.ModuleType("procgen_gym")
         stub.__path__ = [PACKAGE_DIR]
         sys.modules["procgen_gym"] = stub
 
-        _load_module("procgen_gym.libenv", os.path.join(PACKAGE_DIR, "libenv.py"))
+        libenv_shim = types.ModuleType("procgen_gym.libenv")
+        libenv_shim.get_header_dir = lambda: os.path.join(PACKAGE_DIR, "src")
+        sys.modules["procgen_gym.libenv"] = libenv_shim
+
         builder_mod = _load_module(
             "procgen_gym.builder", os.path.join(PACKAGE_DIR, "builder.py")
         )
@@ -68,12 +72,14 @@ class BuildWithCpp(build_py):
         if not os.path.exists(src):
             raise RuntimeError(f"Build succeeded but library not found at {src}")
 
-        os.makedirs(PREBUILT_DIR, exist_ok=True)
-        shutil.copy2(src, os.path.join(PREBUILT_DIR, lib_name))
-        print(f"Copied {lib_name} to {PREBUILT_DIR}")
+        # Copy into the build staging area (not the source tree)
+        dst_dir = os.path.join(self.build_lib, "procgen_gym", "data", "prebuilt")
+        os.makedirs(dst_dir, exist_ok=True)
+        shutil.copy2(src, os.path.join(dst_dir, lib_name))
+        print(f"Copied {lib_name} to {dst_dir}")
 
 
 setup(
-    cmdclass={"build_py": BuildWithCpp},
-    distclass=BinaryDistribution,
+    ext_modules=[DummyExtension()],
+    cmdclass={"build_ext": BuildCppExt},
 )
