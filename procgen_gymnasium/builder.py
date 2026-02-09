@@ -141,6 +141,10 @@ def build(package=False, debug=False):
 
     lib_dir = os.path.join(build_dir, build_type)
     if platform.system() == "Windows":
-        # the built library is in a different location on windows
-        lib_dir = os.path.join(lib_dir, build_type)
+        # MSVC outputs to a subdirectory named with its own casing (e.g. RelWithDebInfo)
+        # Search for the actual directory name case-insensitively
+        for entry in os.listdir(lib_dir):
+            if entry.lower() == build_type.lower():
+                lib_dir = os.path.join(lib_dir, entry)
+                break
     return lib_dir

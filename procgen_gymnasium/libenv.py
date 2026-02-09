@@ -34,6 +34,30 @@ def get_header_dir():
     return os.path.join(SCRIPT_DIR, "src")
 
 
+def _add_dll_directories(lib_dir):
+    """Add Qt5 and other dependency DLL directories to the search path on Windows."""
+    # Check vcpkg_installed in the project root
+    project_root = os.path.dirname(SCRIPT_DIR)
+    vcpkg_bin = os.path.join(project_root, "vcpkg_installed", "x64-windows", "bin")
+    if os.path.isdir(vcpkg_bin):
+        os.add_dll_directory(vcpkg_bin)
+
+    # Check PROCGEN_CMAKE_PREFIX_PATH for a hint to the Qt location
+    cmake_prefix = os.environ.get("PROCGEN_CMAKE_PREFIX_PATH", "")
+    if cmake_prefix:
+        # Walk up from .../share/cmake or .../lib/cmake to find bin/
+        candidate = cmake_prefix
+        for _ in range(4):
+            bin_dir = os.path.join(candidate, "bin")
+            if os.path.isdir(bin_dir):
+                os.add_dll_directory(bin_dir)
+                break
+            candidate = os.path.dirname(candidate)
+
+    # Also add the lib_dir itself
+    os.add_dll_directory(lib_dir)
+
+
 def _load_library(lib_dir):
     """Load the shared library from lib_dir, returning a ctypes CDLL handle."""
     system = platform.system()
@@ -47,6 +71,10 @@ def _load_library(lib_dir):
     lib_path = os.path.join(lib_dir, lib_name)
     if not os.path.exists(lib_path):
         raise FileNotFoundError(f"Could not find shared library at {lib_path}")
+
+    if system == "Windows":
+        # Add directories containing dependency DLLs (e.g. Qt5) to the DLL search path
+        _add_dll_directories(lib_dir)
 
     return ctypes.CDLL(lib_path)
 
@@ -318,7 +346,8 @@ class CLibenv:
     def call_c_func(self, name, *args):
         """Call an extra C function registered via c_func_defs."""
         func = getattr(self._lib, name)
-        return func(self._handle, *args)
+        # Wrap handle as c_void_p to avoid int overflow on 64-bit pointers
+        return func(ctypes.c_void_p(self._handle), *args)
 
     @property
     def ob_types(self):
