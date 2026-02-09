@@ -58,7 +58,7 @@ It is possible for the player to occasionally become trapped along the borders o
 
 ```python
 import gymnasium as gym
-import procgen_gymnasium
+import procgen_gym
 
 # Single environment
 env = gym.make("procgen_gym/procgen-bigfish-v0")

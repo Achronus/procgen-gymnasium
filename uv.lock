@@ -258,7 +258,7 @@ wheels = [
 ]
 
 [[package]]
-name = "procgen-gymnasium"
+name = "procgen-gym"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

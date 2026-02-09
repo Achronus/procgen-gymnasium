@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from procgen_gymnasium.env import ProcgenVecEnv
+from procgen_gym.env import ProcgenVecEnv
 
 
 def test_grayscale_observation(coinrun_vec):
@@ -104,7 +104,9 @@ def test_normalize_observation(coinrun_vec2):
 def test_transform_observation(coinrun_vec):
     from gymnasium.wrappers.vector import TransformObservation
 
-    env = TransformObservation(coinrun_vec, func=lambda obs: obs.astype(np.float32) / 255.0)
+    env = TransformObservation(
+        coinrun_vec, func=lambda obs: obs.astype(np.float32) / 255.0
+    )
     obs, info = env.reset()
     assert obs.dtype == np.float32
     assert obs.max() <= 1.0

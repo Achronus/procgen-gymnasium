@@ -34,7 +34,7 @@ pip install procgen-gym
 
 ```python
 import gymnasium as gym
-import procgen_gymnasium  # registers environments
+import procgen_gym  # registers environments
 
 env = gym.make("procgen_gym/procgen-coinrun-v0")
 obs, info = env.reset()
@@ -53,7 +53,7 @@ env.close()
 ```python
 import gymnasium as gym
 import numpy as np
-import procgen_gymnasium  # registers environments
+import procgen_gym  # registers environments
 
 env = gym.make_vec("procgen_gym/procgen-coinrun-v0", num_envs=16)
 obs, info = env.reset()
@@ -68,7 +68,7 @@ env.close()
 ### Direct instantiation
 
 ```python
-from procgen_gymnasium import ProcgenEnv, ProcgenVecEnv
+from procgen_gym import ProcgenEnv, ProcgenVecEnv
 
 # Single environment
 env = ProcgenEnv(env_name="coinrun")
@@ -167,7 +167,7 @@ All options can be passed as keyword arguments to `gym.make()`, `gym.make_vec()`
 ## State Save/Load
 
 ```python
-from procgen_gymnasium import ProcgenVecEnv
+from procgen_gym import ProcgenVecEnv
 
 env = ProcgenVecEnv(num_envs=1, env_name="coinrun")
 env.reset()
@@ -195,7 +195,7 @@ Keys: arrow keys + Q, W, E, A, S, D for actions. Score is displayed on screen.
 git clone https://github.com/Achronus/procgen-gymnasium.git
 cd procgen-gymnasium
 uv sync --extra test
-uv run python -c "from procgen_gymnasium import ProcgenVecEnv; env = ProcgenVecEnv(num_envs=1, env_name='coinrun'); print('OK'); env.close()"
+uv run python -c "from procgen_gym import ProcgenVecEnv; env = ProcgenVecEnv(num_envs=1, env_name='coinrun'); print('OK'); env.close()"
 ```
 
 The C++ code requires [Qt5](https://www.qt.io/) for rendering. On Windows, install via [vcpkg](https://vcpkg.io/):

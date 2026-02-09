@@ -53,6 +53,15 @@ def _attempt_configure(build_type, package):
     else:
         # guess some common qt cmake paths, it's unclear why cmake can't find qt without this
         cmake_prefix_paths = ["/usr/local/opt/qt5/lib/cmake"]
+
+        # check for vcpkg_installed in the repo root (one level up from this package)
+        repo_root = os.path.dirname(SCRIPT_DIR)
+        vcpkg_cmake_path = os.path.join(
+            repo_root, "vcpkg_installed", "x64-windows", "share", "cmake"
+        )
+        if os.path.isdir(vcpkg_cmake_path):
+            cmake_prefix_paths.insert(0, vcpkg_cmake_path)
+
         conda_exe = shutil.which("conda")
         if conda_exe is not None:
             conda_info = json.loads(

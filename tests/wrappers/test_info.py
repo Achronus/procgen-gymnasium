@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from procgen_gymnasium.env import ENV_NAMES, ProcgenVecEnv
+from procgen_gym.env import ENV_NAMES, ProcgenVecEnv
 
 
 @pytest.mark.parametrize("env_name", ENV_NAMES)
@@ -21,7 +21,9 @@ def test_record_episode_statistics(env_name):
         obs, rew, terminated, truncated, info = env.step(actions)
 
         if np.any(terminated):
-            assert "episode" in info, f"Expected 'episode' key in info, got: {list(info.keys())}"
+            assert "episode" in info, (
+                f"Expected 'episode' key in info, got: {list(info.keys())}"
+            )
             assert "_episode" in info
             episode = info["episode"]
             assert "r" in episode  # episode return

@@ -1,5 +1,5 @@
 [project]
-name = "procgen_gymnasium"
+name = "procgen-gym"
 version = "0.1.0"
 description = "Procedurally Generated Game-Like RL Environments (Gymnasium port)"
 readme = "README.md"
@@ -28,17 +28,17 @@ test = [
 ]
 
 [project.scripts]
-procgen-interactive = "procgen_gymnasium.interactive:main"
+procgen-interactive = "procgen_gym.interactive:main"
 
 [build-system]
 requires = ["setuptools>=82.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["procgen_gymnasium*"]
+include = ["procgen_gym*"]
 
 [tool.setuptools.package-data]
-procgen_gymnasium = ["data/**/*", "src/libenv.h"]
+procgen_gym = ["data/**/*", "src/libenv.h"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

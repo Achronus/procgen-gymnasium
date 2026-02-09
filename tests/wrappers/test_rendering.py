@@ -6,7 +6,7 @@ import tempfile
 import numpy as np
 import pytest
 
-from procgen_gymnasium.env import ProcgenVecEnv
+from procgen_gym.env import ProcgenVecEnv
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
@@ -17,8 +17,11 @@ def test_record_video(env_name):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         env = ProcgenVecEnv(
-            num_envs=1, env_name=env_name, render_mode="rgb_array",
-            num_levels=1, start_level=0,
+            num_envs=1,
+            env_name=env_name,
+            render_mode="rgb_array",
+            num_levels=1,
+            start_level=0,
         )
         env = RecordVideo(env, video_folder=tmpdir, episode_trigger=lambda ep: ep == 0)
 

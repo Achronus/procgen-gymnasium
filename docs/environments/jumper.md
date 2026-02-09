@@ -58,7 +58,7 @@ Due to a bug that permits the player to spawn on top of critical objects (an obs
 
 ```python
 import gymnasium as gym
-import procgen_gymnasium
+import procgen_gym
 
 # Single environment
 env = gym.make("procgen_gym/procgen-jumper-v0")

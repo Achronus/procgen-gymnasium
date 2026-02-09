@@ -58,7 +58,7 @@ There is a low probability of unsolvable level configurations, with either a dia
 
 ```python
 import gymnasium as gym
-import procgen_gymnasium
+import procgen_gym
 
 # Single environment
 env = gym.make("procgen_gym/procgen-miner-v0")

@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from procgen_gymnasium.env import ENV_NAMES, ProcgenVecEnv
+from procgen_gym.env import ENV_NAMES, ProcgenVecEnv
 
 
 @pytest.mark.parametrize("env_name", ENV_NAMES)

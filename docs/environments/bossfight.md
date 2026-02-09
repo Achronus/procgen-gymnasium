@@ -54,7 +54,7 @@ Supports `"easy"` and `"hard"` modes.
 
 ```python
 import gymnasium as gym
-import procgen_gymnasium
+import procgen_gym
 
 # Single environment
 env = gym.make("procgen_gym/procgen-bossfight-v0")

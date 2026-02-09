@@ -36,7 +36,7 @@ def test_same_vector_wrapper_applied_twice():
     """Verify the same vector wrapper can be applied multiple times."""
     from gymnasium.wrappers.vector import ResizeObservation
 
-    from procgen_gymnasium.env import ProcgenVecEnv
+    from procgen_gym.env import ProcgenVecEnv
 
     env = ProcgenVecEnv(num_envs=1, env_name="coinrun", num_levels=1, start_level=0)
     env = ResizeObservation(env, shape=(32, 32))
@@ -60,7 +60,7 @@ def test_mixed_obs_and_reward_wrappers():
         ResizeObservation,
     )
 
-    from procgen_gymnasium.env import ProcgenVecEnv
+    from procgen_gym.env import ProcgenVecEnv
 
     env = ProcgenVecEnv(num_envs=2, env_name="coinrun", num_levels=1, start_level=0)
     env = ClipReward(env, min_reward=-1.0, max_reward=1.0)
