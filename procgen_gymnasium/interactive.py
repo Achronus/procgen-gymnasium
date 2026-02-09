@@ -1,49 +1,14 @@
 #!/usr/bin/env python
+"""
+Interactive play script for procgen environments.
+
+Uses pygame for rendering and keyboard input.
+"""
 import argparse
 
-from procgen import ProcgenGym3Env
-from .env import ENV_NAMES
-from gym3 import Interactive, VideoRecorderWrapper, unwrap
+import numpy as np
 
-
-class ProcgenInteractive(Interactive):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._saved_state = None
-
-    def _update(self, dt, keys_clicked, keys_pressed):
-        if "LEFT_SHIFT" in keys_pressed and "F1" in keys_clicked:
-            print("save state")
-            self._saved_state = unwrap(self._env).get_state()
-        elif "F1" in keys_clicked:
-            print("load state")
-            if self._saved_state is not None:
-                unwrap(self._env).set_state(self._saved_state)
-        super()._update(dt, keys_clicked, keys_pressed)
-
-
-def make_interactive(vision, record_dir, **kwargs):
-    info_key = None
-    ob_key = None
-    if vision == "human":
-        info_key = "rgb"
-        kwargs["render_mode"] = "rgb_array"
-    else:
-        ob_key = "rgb"
-
-    env = ProcgenGym3Env(num=1, **kwargs)
-    if record_dir is not None:
-        env = VideoRecorderWrapper(
-            env=env, directory=record_dir, ob_key=ob_key, info_key=info_key
-        )
-    h, w, _ = env.ob_space["rgb"].shape
-    return ProcgenInteractive(
-        env,
-        ob_key=ob_key,
-        info_key=info_key,
-        width=w * 12,
-        height=h * 12,
-    )
+from .env import ENV_NAMES, ProcgenEnv
 
 
 def main():
@@ -120,16 +85,94 @@ def main():
         "use_backgrounds": not args.disable_backgrounds,
         "restrict_themes": args.restrict_themes,
         "use_monochrome_assets": args.use_monochrome_assets,
+        "render_mode": "rgb_array",
     }
     if args.env_name != "coinrun_old":
         kwargs["distribution_mode"] = args.distribution_mode
     if args.level_seed is not None:
         kwargs["start_level"] = args.level_seed
         kwargs["num_levels"] = 1
-    ia = make_interactive(
-        args.vision, record_dir=args.record_dir, env_name=args.env_name, **kwargs
-    )
-    ia.run()
+
+    env = ProcgenEnv(num_envs=1, env_name=args.env_name, **kwargs)
+
+    try:
+        import pygame
+    except ImportError:
+        print("pygame is required for interactive mode: pip install pygame")
+        return
+
+    pygame.init()
+    scale = 8
+    width, height = 64 * scale, 64 * scale
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.set_caption(f"Procgen - {args.env_name}")
+    clock = pygame.time.Clock()
+
+    obs, info = env.reset()
+    running = True
+    saved_state = None
+
+    key_map = {
+        pygame.K_LEFT: "LEFT",
+        pygame.K_RIGHT: "RIGHT",
+        pygame.K_UP: "UP",
+        pygame.K_DOWN: "DOWN",
+        pygame.K_d: "D",
+        pygame.K_a: "A",
+        pygame.K_w: "W",
+        pygame.K_s: "S",
+        pygame.K_q: "Q",
+        pygame.K_e: "E",
+        pygame.K_LSHIFT: "LEFT_SHIFT",
+        pygame.K_F1: "F1",
+    }
+
+    while running:
+        keys_clicked = set()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key in key_map:
+                    keys_clicked.add(key_map[event.key])
+
+        pressed = pygame.key.get_pressed()
+        keys_held = set()
+        for pg_key, name in key_map.items():
+            if pressed[pg_key]:
+                keys_held.add(name)
+
+        # State save/load
+        if "LEFT_SHIFT" in keys_held and "F1" in keys_clicked:
+            print("save state")
+            saved_state = env.get_state()
+        elif "F1" in keys_clicked:
+            print("load state")
+            if saved_state is not None:
+                env.set_state(saved_state)
+
+        actions = env.keys_to_act([keys_held])
+        action = actions[0]
+        if action is None:
+            action = np.array([4])  # no-op
+
+        obs, rew, terminated, truncated, info = env.step(action)
+
+        # Render
+        frame = env.render()
+        if frame is not None:
+            frame = frame[0]  # first env
+        else:
+            frame = obs[0]
+
+        surf = pygame.surfarray.make_surface(np.transpose(frame, (1, 0, 2)))
+        surf = pygame.transform.scale(surf, (width, height))
+        screen.blit(surf, (0, 0))
+        pygame.display.flip()
+        clock.tick(15)
+
+    env.close()
+    pygame.quit()
 
 
 if __name__ == "__main__":

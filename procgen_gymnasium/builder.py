@@ -8,8 +8,6 @@ import sys
 import platform
 import multiprocessing as mp
 
-import gym3
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -19,12 +17,6 @@ global_builds = set()
 
 class RunFailure(Exception):
     pass
-
-
-@contextlib.contextmanager
-def nullcontext():
-    # this is here for python 3.6 support
-    yield
 
 
 @contextlib.contextmanager
@@ -47,6 +39,12 @@ def check(proc, verbose):
         raise RunFailure("failed to build procgen from source")
     if verbose:
         print(f"RUN {proc.args}:\n{proc.stdout}")
+
+
+def _get_libenv_header_dir():
+    """Return path to the vendored libenv.h header."""
+    from .libenv import get_header_dir
+    return get_header_dir()
 
 
 def _attempt_configure(build_type, package):
@@ -80,7 +78,7 @@ def _attempt_configure(build_type, package):
         generator,
         *extra_configure_options,
         "-DCMAKE_PREFIX_PATH=" + ";".join(cmake_prefix_paths),
-        f"-DLIBENV_DIR={gym3.libenv.get_header_dir()}",
+        f"-DLIBENV_DIR={_get_libenv_header_dir()}",
         "../..",
     ]
     if package:
@@ -108,7 +106,7 @@ def build(package=False, debug=False):
         if build_type not in global_builds:
             if package:
                 # avoid the filelock dependency when building from setup.py
-                lock_ctx = nullcontext()
+                lock_ctx = contextlib.nullcontext()
             else:
                 # prevent multiple processes from trying to build at the same time
                 import filelock
