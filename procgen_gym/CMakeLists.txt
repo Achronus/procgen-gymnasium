@@ -25,11 +25,14 @@ if(MSVC)
 endif()
 
 if (APPLE OR UNIX)
-  if(PROCGEN_PACKAGE)
-    # compile for the minimum spec processor
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=ivybridge")
-  else()
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native")
+  # -march is only valid on x86/x86_64, not on ARM
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64|amd64|i[3-6]86)")
+    if(PROCGEN_PACKAGE)
+      # compile for the minimum spec processor
+      set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=ivybridge")
+    else()
+      set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native")
+    endif()
   endif()
 
   # leave frame pointers so that profiling tools will still work
