@@ -26,6 +26,7 @@ test = [
     "opencv-python>=4.11",
     "pygame-ce>=2.5",
 ]
+ci = ["git-cliff>=2.12"]
 
 [project.scripts]
 procgen-interactive = "procgen_gym.interactive:main"
