@@ -1,20 +1,20 @@
-"""Tests for Gymnasium single-env wrappers with ProcgenEnv (gymnasium.make)."""
+"""Tests for Gymnasium single-env wrappers with ProcgenEnv (gym.make)."""
 
-import gymnasium
+import gymnasium as gym
 import numpy as np
 import pytest
 
 
 @pytest.fixture
 def coinrun_single():
-    env = gymnasium.make("procgen:procgen-coinrun-v0")
+    env = gym.make("procgen_gym/procgen-coinrun-v0")
     yield env
     env.close()
 
 
 @pytest.fixture
 def coinrun_single_rgb():
-    env = gymnasium.make("procgen:procgen-coinrun-v0", render_mode="rgb_array")
+    env = gym.make("procgen_gym/procgen-coinrun-v0", render_mode="rgb_array")
     yield env
     env.close()
 
@@ -140,7 +140,7 @@ def test_render_collection(coinrun_single_rgb):
     frames = env.render()
     assert isinstance(frames, list)
     assert len(frames) > 0
-    # gymnasium.make wraps render output (may upscale), just check it's an RGB image
+    # gym.make wraps render output (may upscale), just check it's an RGB image
     assert frames[0].ndim == 3
     assert frames[0].shape[-1] == 3
 
@@ -197,7 +197,7 @@ def test_multiple_different_wrappers_stacked():
         TimeLimit,
     )
 
-    env = gymnasium.make("procgen:procgen-coinrun-v0")
+    env = gym.make("procgen_gym/procgen-coinrun-v0")
     env = TimeLimit(env, max_episode_steps=50)
     env = RecordEpisodeStatistics(env)
     env = ResizeObservation(env, shape=(32, 32))

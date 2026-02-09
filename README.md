@@ -23,7 +23,7 @@ The C++ game code is **unchanged** — only the Python interface layer has been 
 ## Installation
 
 ```bash
-pip install procgen-gymnasium
+pip install procgen-gym
 ```
 
 **Requirements:** Python 3.13+ (64-bit)
@@ -33,10 +33,10 @@ pip install procgen-gymnasium
 ### Single environment (standard Gymnasium API)
 
 ```python
-import gymnasium
+import gymnasium as gym
 import procgen_gymnasium  # registers environments
 
-env = gymnasium.make("procgen:procgen-coinrun-v0")
+env = gym.make("procgen_gym/procgen-coinrun-v0")
 obs, info = env.reset()
 
 for _ in range(1000):
@@ -51,11 +51,11 @@ env.close()
 ### Vectorized environment (native batched)
 
 ```python
-import gymnasium
+import gymnasium as gym
 import numpy as np
 import procgen_gymnasium  # registers environments
 
-env = gymnasium.make_vec("procgen:procgen-coinrun-v0", num_envs=16)
+env = gym.make_vec("procgen_gym/procgen-coinrun-v0", num_envs=16)
 obs, info = env.reset()
 
 for _ in range(1000):
@@ -102,7 +102,7 @@ All environments produce `(64, 64, 3)` RGB observations and use a `Discrete(15)`
 
 ## Environment Options
 
-All options can be passed as keyword arguments to `gymnasium.make()`, `gymnasium.make_vec()`, or the `ProcgenVecEnv` constructor:
+All options can be passed as keyword arguments to `gym.make()`, `gym.make_vec()`, or the `ProcgenVecEnv` constructor:
 
 | Option | Default | Description |
 | --- | --- | --- |

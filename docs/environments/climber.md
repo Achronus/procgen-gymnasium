@@ -6,7 +6,7 @@
 |---|---|
 | **Action Space** | `Discrete(15)` |
 | **Observation Space** | `Box(0, 255, (64, 64, 3), uint8)` |
-| **Import** | `gymnasium.make("procgen:procgen-climber-v0")` |
+| **Import** | `gym.make("procgen_gym/procgen-climber-v0")` |
 
 ## Description
 
@@ -53,12 +53,12 @@ Supports `"easy"` and `"hard"` modes. Also supports `"exploration"` mode.
 ## Usage
 
 ```python
-import gymnasium
+import gymnasium as gym
 import procgen_gymnasium
 
 # Single environment
-env = gymnasium.make("procgen:procgen-climber-v0")
+env = gym.make("procgen_gym/procgen-climber-v0")
 
 # Vectorized
-env = gymnasium.make_vec("procgen:procgen-climber-v0", num_envs=16)
+env = gym.make_vec("procgen_gym/procgen-climber-v0", num_envs=16)
 ```

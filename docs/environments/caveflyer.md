@@ -6,7 +6,7 @@
 |---|---|
 | **Action Space** | `Discrete(15)` |
 | **Observation Space** | `Box(0, 255, (64, 64, 3), uint8)` |
-| **Import** | `gymnasium.make("procgen:procgen-caveflyer-v0")` |
+| **Import** | `gym.make("procgen_gym/procgen-caveflyer-v0")` |
 
 ## Description
 
@@ -57,12 +57,12 @@ In ~0.5% of levels, the player spawns next to an enemy and will die in a single 
 ## Usage
 
 ```python
-import gymnasium
+import gymnasium as gym
 import procgen_gymnasium
 
 # Single environment
-env = gymnasium.make("procgen:procgen-caveflyer-v0")
+env = gym.make("procgen_gym/procgen-caveflyer-v0")
 
 # Vectorized
-env = gymnasium.make_vec("procgen:procgen-caveflyer-v0", num_envs=16)
+env = gym.make_vec("procgen_gym/procgen-caveflyer-v0", num_envs=16)
 ```

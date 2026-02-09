@@ -1,6 +1,6 @@
-"""Tests for gymnasium.make() and gymnasium.make_vec() registration."""
+"""Tests for gym.make() and gym.make_vec() registration."""
 
-import gymnasium
+import gymnasium as gym
 import numpy as np
 import pytest
 
@@ -9,7 +9,7 @@ from procgen_gymnasium.env import ENV_NAMES
 
 @pytest.mark.parametrize("env_name", ENV_NAMES)
 def test_gymnasium_make_vec(env_name):
-    env = gymnasium.make_vec(f"procgen:procgen-{env_name}-v0", num_envs=1)
+    env = gym.make_vec(f"procgen_gym/procgen-{env_name}-v0", num_envs=1)
     obs, info = env.reset()
     assert obs.shape == (1, 64, 64, 3)
 
@@ -25,7 +25,7 @@ def test_gymnasium_make_vec(env_name):
 
 @pytest.mark.parametrize("env_name", ENV_NAMES)
 def test_gymnasium_make(env_name):
-    env = gymnasium.make(f"procgen:procgen-{env_name}-v0")
+    env = gym.make(f"procgen_gym/procgen-{env_name}-v0")
     obs, info = env.reset()
     assert obs.shape == (64, 64, 3)
 

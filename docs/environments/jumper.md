@@ -6,7 +6,7 @@
 |---|---|
 | **Action Space** | `Discrete(15)` |
 | **Observation Space** | `Box(0, 255, (64, 64, 3), uint8)` |
-| **Import** | `gymnasium.make("procgen:procgen-jumper-v0")` |
+| **Import** | `gym.make("procgen_gym/procgen-jumper-v0")` |
 
 ## Description
 
@@ -57,12 +57,12 @@ Due to a bug that permits the player to spawn on top of critical objects (an obs
 ## Usage
 
 ```python
-import gymnasium
+import gymnasium as gym
 import procgen_gymnasium
 
 # Single environment
-env = gymnasium.make("procgen:procgen-jumper-v0")
+env = gym.make("procgen_gym/procgen-jumper-v0")
 
 # Vectorized
-env = gymnasium.make_vec("procgen:procgen-jumper-v0", num_envs=16)
+env = gym.make_vec("procgen_gym/procgen-jumper-v0", num_envs=16)
 ```

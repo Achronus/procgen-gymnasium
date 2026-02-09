@@ -317,7 +317,7 @@ class ProcgenEnv(gym.Env):
     Single-environment wrapper around ProcgenVecEnv.
 
     Provides standard ``gymnasium.Env`` interface (non-vectorized) so that
-    ``gymnasium.make("procgen:procgen-coinrun-v0")`` works as expected.
+    ``gym.make("procgen_gym/procgen-coinrun-v0")`` works as expected.
     """
 
     metadata = {"render_modes": ["rgb_array"], "render_fps": 15}

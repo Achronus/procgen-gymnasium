@@ -2,13 +2,13 @@
 Example random agent script using the Gymnasium API to demonstrate that procgen works
 """
 
-import gymnasium
+import gymnasium as gym
 import numpy as np
 
 # This import triggers environment registration
 import procgen_gymnasium  # noqa: F401
 
-env = gymnasium.make_vec("procgen:procgen-coinrun-v0", num_envs=1)
+env = gym.make_vec("procgen_gym/procgen-coinrun-v0", num_envs=1)
 obs, info = env.reset()
 step = 0
 
