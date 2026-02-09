@@ -126,7 +126,7 @@ jobs:
         shell: bash
 
       - name: Run tests
-        run: pytest procgen_gym/env_test.py -v --ignore=procgen_gym/examples
+        run: pytest tests/ -v
 
   create-release:
     name: Create GitHub Release
