@@ -1,0 +1,45 @@
+[project]
+name = "procgen-gym"
+version = "0.1.0"
+description = "Procedurally Generated Game-Like RL Environments (Gymnasium port)"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [{ name = "Achronus" }]
+keywords = ["reinforcement-learning", "gymnasium", "procgen", "environments"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = ["gymnasium>=1.2.3", "filelock>=3.20.3"]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=9.0.2",
+    "pytest-benchmark>=5.2.3",
+    "moviepy>=2.1",
+    "opencv-python>=4.11",
+    "pygame-ce>=2.5",
+]
+ci = ["git-cliff>=2.12"]
+
+[project.scripts]
+procgen-interactive = "procgen_gym.interactive:main"
+
+[build-system]
+requires = ["setuptools>=82.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["procgen_gym*"]
+
+[tool.setuptools.package-data]
+procgen_gym = ["data/**/*", "src/libenv.h"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
