@@ -85,13 +85,19 @@ KEY_COMBOS = [
 ]
 
 
-class ProcgenEnv(gym.vector.VectorEnv):
+class ProcgenVecEnv(gym.vector.VectorEnv):
     """
     Gymnasium VectorEnv wrapper around the procgen C++ library.
 
     This is a batched (vectorized) environment — it manages ``num_envs``
     sub-environments internally on the C++ side.
     """
+
+    metadata = {
+        "render_modes": ["rgb_array"],
+        "render_fps": 15,
+        "autoreset_mode": gym.vector.AutoresetMode.NEXT_STEP,
+    }
 
     def __init__(
         self,
@@ -248,14 +254,14 @@ class ProcgenEnv(gym.vector.VectorEnv):
         return info
 
     def render(self):
-        """Return RGB frames if render_mode='rgb_array'."""
+        """Return list of RGB frames (one per env) if render_mode='rgb_array'."""
         if self.render_mode == "rgb_array":
             info = self._clib.get_info_bufs()
             if "rgb" in info:
-                return info["rgb"].copy()
+                frames = info["rgb"]
             else:
-                obs = self._clib.get_ob_bufs()
-                return obs["rgb"].copy()
+                frames = self._clib.get_ob_bufs()["rgb"]
+            return [frames[i].copy() for i in range(self.num_envs)]
         return None
 
     def close(self):
@@ -304,3 +310,42 @@ class ProcgenEnv(gym.vector.VectorEnv):
                 action = np.array([action])
             result.append(action)
         return result
+
+
+class ProcgenEnv(gym.Env):
+    """
+    Single-environment wrapper around ProcgenVecEnv.
+
+    Provides standard ``gymnasium.Env`` interface (non-vectorized) so that
+    ``gymnasium.make("procgen:procgen-coinrun-v0")`` works as expected.
+    """
+
+    metadata = {"render_modes": ["rgb_array"], "render_fps": 15}
+
+    def __init__(self, env_name: str = "coinrun", render_mode: Optional[str] = None, **kwargs):
+        self._vec_env = ProcgenVecEnv(
+            num_envs=1, env_name=env_name, num_threads=0,
+            render_mode=render_mode, **kwargs,
+        )
+        self.observation_space = spaces.Box(
+            low=0, high=255, shape=(64, 64, 3), dtype=np.uint8
+        )
+        self.action_space = spaces.Discrete(len(KEY_COMBOS))
+        self.render_mode = render_mode
+
+    def reset(self, seed=None, options=None):
+        obs, info = self._vec_env.reset(seed=seed, options=options)
+        return obs[0], {k: v[0] for k, v in info.items()}
+
+    def step(self, action):
+        obs, rew, terminated, truncated, info = self._vec_env.step(np.array([action], dtype=np.int32))
+        return obs[0], float(rew[0]), bool(terminated[0]), bool(truncated[0]), {k: v[0] for k, v in info.items()}
+
+    def render(self):
+        frame = self._vec_env.render()
+        if frame is not None:
+            return frame[0]
+        return None
+
+    def close(self):
+        self._vec_env.close()

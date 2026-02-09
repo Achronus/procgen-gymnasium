@@ -8,7 +8,7 @@ import numpy as np
 # This import triggers environment registration
 import procgen_gymnasium  # noqa: F401
 
-env = gymnasium.make("procgen_gymnasium/coinrun-v0")
+env = gymnasium.make_vec("procgen:procgen-coinrun-v0", num_envs=1)
 obs, info = env.reset()
 step = 0
 

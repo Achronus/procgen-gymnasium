@@ -8,7 +8,7 @@ import argparse
 
 import numpy as np
 
-from .env import ENV_NAMES, ProcgenEnv
+from .env import ENV_NAMES, ProcgenVecEnv
 
 
 def main():
@@ -93,7 +93,7 @@ def main():
         kwargs["start_level"] = args.level_seed
         kwargs["num_levels"] = 1
 
-    env = ProcgenEnv(num_envs=1, env_name=args.env_name, **kwargs)
+    env = ProcgenVecEnv(num_envs=1, env_name=args.env_name, **kwargs)
 
     try:
         import pygame
