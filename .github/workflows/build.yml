@@ -19,7 +19,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+        include:
+          - os: ubuntu-latest
+            cibw_archs: x86_64
+          - os: windows-latest
+            cibw_archs: AMD64
+          - os: macos-latest
+            cibw_archs: arm64
 
     steps:
       - uses: actions/checkout@v6
@@ -61,9 +67,7 @@ jobs:
         env:
           CIBW_BUILD: "cp313-*"
           CIBW_SKIP: "*-musllinux* *-manylinux_i686*"
-          CIBW_ARCHS_LINUX: x86_64
-          CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_ARCHS_WINDOWS: AMD64
+          CIBW_ARCHS: ${{ matrix.cibw_archs }}
           CIBW_BEFORE_BUILD_LINUX: >
             yum install -y qt5-qtbase-devel cmake ||
             (apt-get update && apt-get install -y qtbase5-dev cmake)
