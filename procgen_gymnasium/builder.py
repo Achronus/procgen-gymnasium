@@ -70,17 +70,18 @@ def _attempt_configure(build_type, package):
     generator = "Unix Makefiles"
     extra_configure_options = []
     if platform.system() == "Windows":
-        generator = "Visual Studio 16 2019"
+        # Let CMake auto-detect the installed Visual Studio version
+        generator = None
         extra_configure_options.extend(["-A", "x64"])
-    configure_cmd = [
-        "cmake",
-        "-G",
-        generator,
+    configure_cmd = ["cmake"]
+    if generator is not None:
+        configure_cmd.extend(["-G", generator])
+    configure_cmd.extend([
         *extra_configure_options,
         "-DCMAKE_PREFIX_PATH=" + ";".join(cmake_prefix_paths),
         f"-DLIBENV_DIR={_get_libenv_header_dir()}",
         "../..",
-    ]
+    ])
     if package:
         configure_cmd.append("-DPROCGEN_PACKAGE=ON")
     if platform.system() != "Windows":

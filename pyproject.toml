@@ -5,7 +5,7 @@ description = "Procedurally Generated Game-Like RL Environments (Gymnasium port)
 readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
-authors = [{ name = "OpenAI" }, { name = "Achronus" }]
+authors = [{ name = "Achronus" }]
 keywords = ["reinforcement-learning", "gymnasium", "procgen", "environments"]
 classifiers = [
     "Development Status :: 4 - Beta",
