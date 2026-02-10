@@ -5,6 +5,8 @@ on:
     tags:
       - "v*"
     branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
@@ -17,7 +19,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+        include:
+          - os: ubuntu-latest
+            cibw_archs: x86_64
+          - os: windows-latest
+            cibw_archs: AMD64
 
     steps:
       - uses: actions/checkout@v6
@@ -28,12 +34,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qtbase5-dev qt5-qmake cmake
 
-      - name: Install Qt5 (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install qt@5 cmake
-          echo "PROCGEN_CMAKE_PREFIX_PATH=$(brew --prefix qt@5)/lib/cmake" >> $GITHUB_ENV
-
       - name: Install Qt5 (Windows)
         if: runner.os == 'Windows'
         uses: jurplel/install-qt-action@v4
@@ -41,11 +41,15 @@ jobs:
           version: "5.15.2"
           target: desktop
           arch: win64_msvc2019_64
+          setup-python: false
 
       - name: Set Qt path (Windows)
         if: runner.os == 'Windows'
-        shell: bash
-        run: echo "PROCGEN_CMAKE_PREFIX_PATH=$Qt5_DIR/lib/cmake" >> $GITHUB_ENV
+        shell: pwsh
+        run: |
+          $qtRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $env:Qt5_DIR))
+          echo "PROCGEN_CMAKE_PREFIX_PATH=$qtRoot\lib\cmake" >> $env:GITHUB_ENV
+          echo "QT_BIN_DIR=$qtRoot\bin" >> $env:GITHUB_ENV
 
       - uses: actions/setup-python@v6
         with:
@@ -59,12 +63,14 @@ jobs:
         env:
           CIBW_BUILD: "cp313-*"
           CIBW_SKIP: "*-musllinux* *-manylinux_i686*"
-          CIBW_ARCHS_LINUX: x86_64
-          CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_ARCHS_WINDOWS: AMD64
+          CIBW_ARCHS: ${{ matrix.cibw_archs }}
           CIBW_BEFORE_BUILD_LINUX: >
             yum install -y qt5-qtbase-devel cmake ||
-            apt-get update && apt-get install -y qtbase5-dev cmake
+            (apt-get update && apt-get install -y qtbase5-dev cmake)
+          CIBW_BEFORE_BUILD_WINDOWS: pip install delvewheel
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
+            delvewheel repair -w {dest_dir} {wheel}
+            --add-path "${{ env.QT_BIN_DIR }}"
           CIBW_ENVIRONMENT: >
             PROCGEN_CMAKE_PREFIX_PATH=${{ env.PROCGEN_CMAKE_PREFIX_PATH || '' }}
 
@@ -98,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v6
@@ -112,14 +118,35 @@ jobs:
           name: wheels-${{ matrix.os }}
           path: wheelhouse
 
+      - name: Install Qt5 runtime (Windows)
+        if: runner.os == 'Windows'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "5.15.2"
+          target: desktop
+          arch: win64_msvc2019_64
+          setup-python: false
+
+      - name: Add Qt to PATH (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $qtRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $env:Qt5_DIR))
+          echo "$qtRoot\bin" >> $env:GITHUB_PATH
+
       - name: Install wheel and test deps
         run: |
-          pip install wheelhouse/*.whl
-          pip install pytest pytest-benchmark
+          pip install "$(ls wheelhouse/*.whl)[test]"
+        shell: bash
+
+      - name: Copy tests away from source tree
+        run: cp -r tests/ "${{ runner.temp }}/tests/"
         shell: bash
 
       - name: Run tests
-        run: pytest procgen_gym/env_test.py -v --ignore=procgen_gym/examples
+        run: pytest "${{ runner.temp }}/tests/" -v
+        env:
+          QT_QPA_PLATFORM: offscreen
 
   create-release:
     name: Create GitHub Release

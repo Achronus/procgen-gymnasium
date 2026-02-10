@@ -44,7 +44,7 @@ int libenv_version() {
     return LIBENV_VERSION;
 }
 
-libenv_env *libenv_make(int num_envs, const struct libenv_options options) {
+libenv_env *libenv_make(int num_envs, const struct libenv_options *options) {
     auto venv = new VecGame(num_envs, VecOptions(options));
     return (libenv_env *)(venv);
 }

@@ -54,8 +54,14 @@ def _add_dll_directories(lib_dir):
                 break
             candidate = os.path.dirname(candidate)
 
-    # Also add the lib_dir itself
+    # Also add the lib_dir itself (where delvewheel bundles deps)
     os.add_dll_directory(lib_dir)
+
+    # Search PATH for directories containing Qt5Core.dll
+    for d in os.environ.get("PATH", "").split(os.pathsep):
+        if d and os.path.isfile(os.path.join(d, "Qt5Core.dll")):
+            os.add_dll_directory(d)
+            break
 
 
 def _load_library(lib_dir):
@@ -211,12 +217,13 @@ class CLibenv:
 
     def __init__(self, lib_dir, num, options, c_func_defs=None):
         self.num = num
+        self._handle = None
         self._lib = _load_library(lib_dir)
         self._keepalive = []
 
         # Set up function signatures
         self._lib.libenv_make.restype = ctypes.c_void_p
-        self._lib.libenv_make.argtypes = [ctypes.c_int, _LibenvOptions]
+        self._lib.libenv_make.argtypes = [ctypes.c_int, ctypes.POINTER(_LibenvOptions)]
 
         self._lib.libenv_observe.restype = None
         self._lib.libenv_observe.argtypes = [ctypes.c_void_p]
@@ -235,7 +242,7 @@ class CLibenv:
         # Create the environment
         opts, keepalive = _make_options(options)
         self._keepalive.extend(keepalive)
-        self._handle = self._lib.libenv_make(num, opts)
+        self._handle = self._lib.libenv_make(num, ctypes.byref(opts))
 
         # Query tensor types
         self._ob_types = _get_tensortypes(self._lib, self._handle, _SPACE_OBSERVATION)

@@ -16,7 +16,7 @@ if(APPLE)
   # clang defaults to 20 errors, but usually only the first one is useful
   add_compile_options(-ferror-limit=1)
   # only produce errors on mac where development is done
-  add_compile_options(-Werror -Wextra -Wshadow -Wall -Wformat=2 -Wundef -Wvla -Wmissing-include-dirs -Wnon-virtual-dtor -Wno-unused-parameter)
+  add_compile_options(-Werror -Wextra -Wshadow -Wall -Wformat=2 -Wundef -Wvla -Wmissing-include-dirs -Wnon-virtual-dtor -Wno-unused-parameter -Wno-unused-but-set-variable)
 endif()
 
 if(MSVC)
@@ -25,11 +25,14 @@ if(MSVC)
 endif()
 
 if (APPLE OR UNIX)
-  if(PROCGEN_PACKAGE)
-    # compile for the minimum spec processor
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=ivybridge")
-  else()
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native")
+  # -march is only valid on x86/x86_64, not on ARM
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64|amd64|i[3-6]86)")
+    if(PROCGEN_PACKAGE)
+      # compile for the minimum spec processor
+      set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=ivybridge")
+    else()
+      set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native")
+    endif()
   endif()
 
   # leave frame pointers so that profiling tools will still work

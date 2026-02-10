@@ -41,5 +41,8 @@ include = ["procgen_gym*"]
 [tool.setuptools.package-data]
 procgen_gym = ["data/**/*", "src/libenv.h"]
 
+[tool.cibuildwheel]
+build-frontend = "pip"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

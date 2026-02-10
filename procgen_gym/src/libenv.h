@@ -86,7 +86,7 @@ struct libenv_buffers {
 typedef struct libenv_env_s libenv_env;
 
 LIBENV_API int libenv_version(void);
-LIBENV_API libenv_env *libenv_make(int num_envs, const struct libenv_options options);
+LIBENV_API libenv_env *libenv_make(int num_envs, const struct libenv_options *options);
 LIBENV_API int libenv_get_tensortypes(libenv_env *handle, enum libenv_space_name name, struct libenv_tensortype *out_types);
 LIBENV_API void libenv_set_buffers(libenv_env *handle, struct libenv_buffers *bufs);
 LIBENV_API void libenv_observe(libenv_env *handle);
