@@ -41,6 +41,7 @@ jobs:
           version: "5.15.2"
           target: desktop
           arch: win64_msvc2019_64
+          setup-python: false
 
       - name: Set Qt path (Windows)
         if: runner.os == 'Windows'
@@ -124,6 +125,7 @@ jobs:
           version: "5.15.2"
           target: desktop
           arch: win64_msvc2019_64
+          setup-python: false
 
       - name: Add Qt to PATH (Windows)
         if: runner.os == 'Windows'
