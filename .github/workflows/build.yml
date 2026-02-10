@@ -53,7 +53,10 @@ jobs:
       - name: Set Qt path (Windows)
         if: runner.os == 'Windows'
         shell: bash
-        run: echo "PROCGEN_CMAKE_PREFIX_PATH=$Qt5_DIR/lib/cmake" >> $GITHUB_ENV
+        run: |
+          QT_ROOT="$(cd "$Qt5_DIR/../../.." && pwd)"
+          echo "PROCGEN_CMAKE_PREFIX_PATH=$QT_ROOT/lib/cmake" >> $GITHUB_ENV
+          echo "QT_BIN_DIR=$QT_ROOT/bin" >> $GITHUB_ENV
 
       - uses: actions/setup-python@v6
         with:
@@ -71,6 +74,10 @@ jobs:
           CIBW_BEFORE_BUILD_LINUX: >
             yum install -y qt5-qtbase-devel cmake ||
             (apt-get update && apt-get install -y qtbase5-dev cmake)
+          CIBW_BEFORE_BUILD_WINDOWS: pip install delvewheel
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
+            delvewheel repair -w {dest_dir} {wheel}
+            --add-path "${{ env.QT_BIN_DIR }}"
           CIBW_ENVIRONMENT: >
             PROCGEN_CMAKE_PREFIX_PATH=${{ env.PROCGEN_CMAKE_PREFIX_PATH || '' }}
             MACOSX_DEPLOYMENT_TARGET=15.0
@@ -130,6 +137,8 @@ jobs:
 
       - name: Run tests
         run: pytest "${{ runner.temp }}/tests/" -v
+        env:
+          QT_QPA_PLATFORM: offscreen
 
   create-release:
     name: Create GitHub Release
