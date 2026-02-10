@@ -211,6 +211,28 @@ vcpkg install qt5-base:x64-windows
 set PROCGEN_CMAKE_PREFIX_PATH=path/to/vcpkg_installed/x64-windows/share/cmake
 ```
 
+## Building Wheels
+
+Requires `MSVC`, `CMake`, `vcpkg` with `Qt5`, and [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for Linux wheels).
+
+```bash
+# Install build dependencies
+uv sync --extra build
+
+# Build both Windows + Linux wheels
+uv run python -m procgen_build --clean
+
+# Or one platform at a time
+uv run python -m procgen_build --platform win
+uv run python -m procgen_build --platform linux
+
+# Verify Windows wheel has Qt5 DLLs bundled (should show 10+ DLLs)
+uv run python -c "import zipfile, glob; whl=glob.glob('wheelhouse/*win*.whl')[0]; dlls=[f for f in zipfile.ZipFile(whl).namelist() if f.endswith('.dll')]; print(f'{len(dlls)} DLLs:'); [print(f'  {d}') for d in dlls]"
+
+# Verify Linux wheel has libenv.so with Qt5 bundled (should show ~18MB .so)
+uv run python -c "import zipfile, glob; whl=glob.glob('wheelhouse/*manylinux*.whl')[0]; libs=[f for f in zipfile.ZipFile(whl).namelist() if f.endswith('.so')]; print(f'{len(libs)} .so libs:'); [print(f'  {f}') for f in libs]"
+```
+
 ## Known Issues
 
 These are inherited from the original procgen and kept for reproducibility:

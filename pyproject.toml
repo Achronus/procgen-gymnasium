@@ -1,6 +1,6 @@
 [project]
 name = "procgen-gym"
-version = "0.1.0"
+version = "0.1.1"
 description = "Procedurally Generated Game-Like RL Environments (Gymnasium port)"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -27,6 +27,8 @@ test = [
     "pygame-ce>=2.5",
 ]
 ci = ["git-cliff>=2.12"]
+build = ["cibuildwheel>=3.3.1", "twine>=6.2.0", "delvewheel>=1.12.0"]
+
 
 [project.scripts]
 procgen-interactive = "procgen_gym.interactive:main"

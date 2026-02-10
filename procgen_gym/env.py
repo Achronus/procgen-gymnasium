@@ -1,5 +1,6 @@
 import os
 import ctypes
+import platform
 import random
 from typing import Sequence, Optional, List
 
@@ -84,6 +85,41 @@ KEY_COMBOS = [
     ("E",),
 ]
 
+_LIB_NAMES = ("libenv.so", "libenv.dylib", "env.dll")
+
+
+def _lib_exists_in(directory):
+    """Check if any recognized shared library file exists in the directory."""
+    if not os.path.isdir(directory):
+        return False
+    return any(os.path.exists(os.path.join(directory, n)) for n in _LIB_NAMES)
+
+
+def _find_lib_dir():
+    """Locate the directory containing the prebuilt shared library.
+
+    Search order:
+      1. ``data/prebuilt/`` inside the installed package (pip wheel)
+      2. Conda environment prefix lib directory
+      3. ``None`` — triggers on-demand build fallback
+    """
+    # 1. pip / wheel install
+    prebuilt = os.path.join(SCRIPT_DIR, "data", "prebuilt")
+    if _lib_exists_in(prebuilt):
+        return prebuilt
+
+    # 2. conda-forge install
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if conda_prefix:
+        if platform.system() == "Windows":
+            conda_lib = os.path.join(conda_prefix, "Library", "bin")
+        else:
+            conda_lib = os.path.join(conda_prefix, "lib")
+        if _lib_exists_in(conda_lib):
+            return conda_lib
+
+    return None
+
 
 class ProcgenVecEnv(gym.vector.VectorEnv):
     """
@@ -139,12 +175,8 @@ class ProcgenVecEnv(gym.vector.VectorEnv):
             resource_root = os.path.join(SCRIPT_DIR, "data", "assets") + os.sep
             assert os.path.exists(resource_root), f"Asset root not found: {resource_root}"
 
-        lib_dir = os.path.join(SCRIPT_DIR, "data", "prebuilt")
-        if os.path.exists(lib_dir):
-            assert any(
-                os.path.exists(os.path.join(lib_dir, name))
-                for name in ["libenv.so", "libenv.dylib", "env.dll"]
-            ), "package is installed, but the prebuilt environment library is missing"
+        lib_dir = _find_lib_dir()
+        if lib_dir is not None:
             assert not debug, "debug has no effect for pre-compiled library"
         else:
             lib_dir = build(debug=debug)
