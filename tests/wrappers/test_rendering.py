@@ -38,12 +38,14 @@ def test_record_video(env_name):
 
 def test_human_rendering(coinrun_vec_rgb):
     """Verify HumanRendering can be instantiated without error."""
+    if os.environ.get("CI"):
+        pytest.skip("Requires a display; not available on CI")
+    if os.environ.get("DISPLAY") is None and os.name != "nt":
+        pytest.skip("No display available")
+
     pytest.importorskip("pygame", reason="pygame not installed")
     pytest.importorskip("cv2", reason="opencv not installed")
     from gymnasium.wrappers.vector import HumanRendering
-
-    if os.environ.get("DISPLAY") is None and os.name != "nt":
-        pytest.skip("No display available")
 
     env = HumanRendering(coinrun_vec_rgb)
     env.close()

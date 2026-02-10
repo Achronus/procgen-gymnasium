@@ -23,7 +23,7 @@ test = [
     "pytest>=9.0.2",
     "pytest-benchmark>=5.2.3",
     "moviepy>=2.1",
-    "opencv-python>=4.11",
+    "opencv-python-headless>=4.11",
     "pygame-ce>=2.5",
 ]
 ci = ["git-cliff>=2.12"]
