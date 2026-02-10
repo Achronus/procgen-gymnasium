@@ -223,7 +223,7 @@ class CLibenv:
 
         # Set up function signatures
         self._lib.libenv_make.restype = ctypes.c_void_p
-        self._lib.libenv_make.argtypes = [ctypes.c_int, _LibenvOptions]
+        self._lib.libenv_make.argtypes = [ctypes.c_int, ctypes.POINTER(_LibenvOptions)]
 
         self._lib.libenv_observe.restype = None
         self._lib.libenv_observe.argtypes = [ctypes.c_void_p]
@@ -242,7 +242,7 @@ class CLibenv:
         # Create the environment
         opts, keepalive = _make_options(options)
         self._keepalive.extend(keepalive)
-        self._handle = self._lib.libenv_make(num, opts)
+        self._handle = self._lib.libenv_make(num, ctypes.byref(opts))
 
         # Query tensor types
         self._ob_types = _get_tensortypes(self._lib, self._handle, _SPACE_OBSERVATION)
