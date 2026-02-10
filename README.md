@@ -26,7 +26,13 @@ The C++ game code is **unchanged** — only the Python interface layer has been 
 pip install procgen-gym
 ```
 
-**Requirements:** Python 3.13+ (64-bit)
+**Requirements:** Python 3.13+ (64-bit).
+
+| Platform | Architecture | Status |
+| --- | --- | --- |
+| Linux | x86_64 | Supported |
+| Windows | AMD64 | Supported |
+| macOS | - | Not supported |
 
 ## Quick Start
 
