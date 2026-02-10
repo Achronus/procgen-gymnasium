@@ -2,8 +2,8 @@
 Custom setup.py that compiles the C++ game library during wheel creation.
 
 Uses the DummyExtension pattern (from original OpenAI procgen) to trigger
-build_ext, which produces a platform-tagged wheel and copies the compiled
-shared library into the wheel's package data.
+build_ext, which produces a platform-tagged wheel. The compiled library is
+copied into the source tree's data/prebuilt/ so that package_data picks it up.
 """
 
 import importlib.util
@@ -14,6 +14,7 @@ import sys
 import types
 
 from setuptools import Extension, setup
+from setuptools.command.build import build
 from setuptools.command.build_ext import build_ext
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -72,14 +73,27 @@ class BuildCppExt(build_ext):
         if not os.path.exists(src):
             raise RuntimeError(f"Build succeeded but library not found at {src}")
 
-        # Copy into the build staging area (not the source tree)
-        dst_dir = os.path.join(self.build_lib, "procgen_gym", "data", "prebuilt")
+        # Copy into the SOURCE tree so package_data ("data/**/*") picks it up
+        dst_dir = os.path.join(PACKAGE_DIR, "data", "prebuilt")
         os.makedirs(dst_dir, exist_ok=True)
-        shutil.copy2(src, os.path.join(dst_dir, lib_name))
+        dst = os.path.join(dst_dir, lib_name)
+        shutil.copy2(src, dst)
         print(f"Copied {lib_name} to {dst_dir}")
+
+
+class CustomBuild(build):
+    """Run build_ext before build_py so the library is in the source tree
+    when package_data is collected."""
+
+    def run(self):
+        self.run_command("build_ext")
+        super().run()
 
 
 setup(
     ext_modules=[DummyExtension()],
-    cmdclass={"build_ext": BuildCppExt},
+    cmdclass={
+        "build": CustomBuild,
+        "build_ext": BuildCppExt,
+    },
 )

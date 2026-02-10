@@ -54,8 +54,14 @@ def _add_dll_directories(lib_dir):
                 break
             candidate = os.path.dirname(candidate)
 
-    # Also add the lib_dir itself
+    # Also add the lib_dir itself (where delvewheel bundles deps)
     os.add_dll_directory(lib_dir)
+
+    # Search PATH for directories containing Qt5Core.dll
+    for d in os.environ.get("PATH", "").split(os.pathsep):
+        if d and os.path.isfile(os.path.join(d, "Qt5Core.dll")):
+            os.add_dll_directory(d)
+            break
 
 
 def _load_library(lib_dir):
@@ -211,6 +217,7 @@ class CLibenv:
 
     def __init__(self, lib_dir, num, options, c_func_defs=None):
         self.num = num
+        self._handle = None
         self._lib = _load_library(lib_dir)
         self._keepalive = []
 

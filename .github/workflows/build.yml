@@ -121,12 +121,15 @@ jobs:
 
       - name: Install wheel and test deps
         run: |
-          pip install wheelhouse/*.whl
-          pip install pytest pytest-benchmark
+          pip install "$(ls wheelhouse/*.whl)[test]"
+        shell: bash
+
+      - name: Copy tests away from source tree
+        run: cp -r tests/ "${{ runner.temp }}/tests/"
         shell: bash
 
       - name: Run tests
-        run: pytest tests/ -v
+        run: pytest "${{ runner.temp }}/tests/" -v
 
   create-release:
     name: Create GitHub Release
