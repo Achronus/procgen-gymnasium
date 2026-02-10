@@ -51,6 +51,10 @@ class BuildCppExt(build_ext):
             print("skipping inplace build, library will be built on demand")
             return
 
+        if os.environ.get("PROCGEN_SKIP_BUILD"):
+            print("PROCGEN_SKIP_BUILD is set, skipping C++ compilation")
+            return
+
         # Register a stub procgen_gym package with a minimal libenv shim
         # so builder.py's `from .libenv import get_header_dir` resolves
         # without pulling in numpy/ctypes (unavailable in build env).

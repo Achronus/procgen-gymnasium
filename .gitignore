@@ -106,6 +106,9 @@ venv.bak/
 .envrc
 .build/
 
+# Wheel output
+wheelhouse/
+
 # vcpkg
 vcpkg_installed/
 vcpkg.json

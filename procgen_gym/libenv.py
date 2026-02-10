@@ -57,6 +57,13 @@ def _add_dll_directories(lib_dir):
     # Also add the lib_dir itself (where delvewheel bundles deps)
     os.add_dll_directory(lib_dir)
 
+    # Check CONDA_PREFIX for Qt5 DLLs (conda-forge install)
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if conda_prefix:
+        conda_bin = os.path.join(conda_prefix, "Library", "bin")
+        if os.path.isdir(conda_bin):
+            os.add_dll_directory(conda_bin)
+
     # Search PATH for directories containing Qt5Core.dll
     for d in os.environ.get("PATH", "").split(os.pathsep):
         if d and os.path.isfile(os.path.join(d, "Qt5Core.dll")):
