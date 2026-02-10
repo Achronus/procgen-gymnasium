@@ -1,0 +1,50 @@
+name: Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish (e.g. v0.1.1)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install twine
+        run: pip install twine
+
+      - name: Download wheels from GitHub Release
+        run: |
+          mkdir -p dist
+          echo "Downloading wheels for release ${{ inputs.tag }}..."
+          gh release download "${{ inputs.tag }}" --pattern "*.whl" --dir dist
+          echo "Downloaded wheels:"
+          ls -la dist/
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify wheels exist
+        run: |
+          if [ -z "$(ls dist/*.whl 2>/dev/null)" ]; then
+            echo "ERROR: No wheels found in the release. Upload wheels first!"
+            exit 1
+          fi
+
+      - name: Publish to PyPI
+        run: twine upload dist/*.whl
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}

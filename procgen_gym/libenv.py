@@ -34,13 +34,21 @@ def get_header_dir():
     return os.path.join(SCRIPT_DIR, "src")
 
 
+def _try_add_dll_directory(path):
+    """Safely call os.add_dll_directory, ignoring errors for invalid paths."""
+    try:
+        os.add_dll_directory(path)
+    except OSError:
+        pass
+
+
 def _add_dll_directories(lib_dir):
     """Add Qt5 and other dependency DLL directories to the search path on Windows."""
     # Check vcpkg_installed in the project root
     project_root = os.path.dirname(SCRIPT_DIR)
     vcpkg_bin = os.path.join(project_root, "vcpkg_installed", "x64-windows", "bin")
     if os.path.isdir(vcpkg_bin):
-        os.add_dll_directory(vcpkg_bin)
+        _try_add_dll_directory(vcpkg_bin)
 
     # Check PROCGEN_CMAKE_PREFIX_PATH for a hint to the Qt location
     cmake_prefix = os.environ.get("PROCGEN_CMAKE_PREFIX_PATH", "")
@@ -50,24 +58,25 @@ def _add_dll_directories(lib_dir):
         for _ in range(4):
             bin_dir = os.path.join(candidate, "bin")
             if os.path.isdir(bin_dir):
-                os.add_dll_directory(bin_dir)
+                _try_add_dll_directory(bin_dir)
                 break
             candidate = os.path.dirname(candidate)
 
     # Also add the lib_dir itself (where delvewheel bundles deps)
-    os.add_dll_directory(lib_dir)
+    if os.path.isdir(lib_dir):
+        _try_add_dll_directory(lib_dir)
 
     # Check CONDA_PREFIX for Qt5 DLLs (conda-forge install)
     conda_prefix = os.environ.get("CONDA_PREFIX")
     if conda_prefix:
         conda_bin = os.path.join(conda_prefix, "Library", "bin")
         if os.path.isdir(conda_bin):
-            os.add_dll_directory(conda_bin)
+            _try_add_dll_directory(conda_bin)
 
     # Search PATH for directories containing Qt5Core.dll
     for d in os.environ.get("PATH", "").split(os.pathsep):
         if d and os.path.isfile(os.path.join(d, "Qt5Core.dll")):
-            os.add_dll_directory(d)
+            _try_add_dll_directory(d)
             break
 
 
